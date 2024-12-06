@@ -49,3 +49,18 @@ export async function updateUser(clerkId: string, user: UpdateUserParams) {
     handleError(error);
   }
 }
+
+// DELETE
+export async function deleteUser(userId: string) {
+  try {
+    await connectToDatabase();
+
+    const deletedUser = await User.findOneAndDelete({ clerkId: userId });
+    
+    if (!deletedUser) throw new Error("User deletion failed");
+    
+    return JSON.parse(JSON.stringify(deletedUser));
+  } catch (error) {
+    handleError(error);
+  }
+}
