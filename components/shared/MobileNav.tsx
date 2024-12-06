@@ -2,7 +2,9 @@
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { navLinks } from "@/constants"
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs"
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react" // Ubah import
+// Atau bisa juga:
+// import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs/client" 
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -24,7 +26,8 @@ const MobileNav = () => {
 
       <nav className="flex gap-2">
         <SignedIn>
-          <UserButton afterSignOutUrl="/" />
+          {/* Tambahkan key untuk memaksa re-render */}
+          <UserButton afterSignOutUrl="/" key="user-button" />
 
           <Sheet>
             <SheetTrigger>
@@ -45,38 +48,38 @@ const MobileNav = () => {
                   height={23}
                 />
 
-              <ul className="header-nav_elements">
-              {navLinks.map((link) => {
-                const isActive = link.route === pathname
+                <ul className="header-nav_elements">
+                  {navLinks.map((link) => {
+                    const isActive = link.route === pathname
 
-                return (
-                  <li 
-                    className={`${isActive && 'gradient-text'} p-18 flex whitespace-nowrap text-dark-700`}
-                    key={link.route}
-                    >
-                    <Link className="sidebar-link cursor-pointer" href={link.route}>
-                      <Image 
-                        src={link.icon}
-                        alt="logo"
-                        width={24}
-                        height={24}
-                      />
-                      {link.label}
-                    </Link>
-                  </li>
-                )
-              })}
-              </ul>
+                    return (
+                      <li 
+                        className={`${isActive && 'gradient-text'} p-18 flex whitespace-nowrap text-dark-700`}
+                        key={link.route}
+                      >
+                        <Link className="sidebar-link cursor-pointer" href={link.route}>
+                          <Image 
+                            src={link.icon}
+                            alt="logo"
+                            width={24}
+                            height={24}
+                          />
+                          {link.label}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
               </>
             </SheetContent>
           </Sheet>
         </SignedIn>
 
         <SignedOut>
-            <Button asChild className="button bg-purple-gradient bg-cover">
-              <Link href="/sign-in">Login</Link>
-            </Button>
-          </SignedOut>
+          <Button asChild className="button bg-purple-gradient bg-cover">
+            <Link href="/sign-in">Login</Link>
+          </Button>
+        </SignedOut>
       </nav>
     </header>
   )

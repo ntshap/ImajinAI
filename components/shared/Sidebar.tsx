@@ -1,7 +1,7 @@
 "use client"
 
 import { navLinks } from '@/constants'
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'  // Ubah import ini
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -40,8 +40,7 @@ const Sidebar = () => {
                   </li>
                 )
               })}
-              </ul>
-
+            </ul>
 
             <ul className="sidebar-nav_elements">
               {navLinks.slice(6).map((link) => {
