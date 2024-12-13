@@ -1,12 +1,11 @@
-"use client";
+'use client';
 
-import { useToast } from "@/components/ui/use-toast"
-import { dataUrl, getImageSize } from "@/lib/utils";
-import { CldImage, CldUploadWidget } from "next-cloudinary"
-import { PlaceholderValue } from "next/dist/shared/lib/get-img-props";
-import Image from "next/image";
+import Image from 'next/image';
+import { CldUploadWidget, CloudinaryUploadWidgetResults, CloudinaryUploadWidgetError } from 'next-cloudinary';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
-interface ImageType {
+type ImageType = {
   publicId: string;
   width: number;
   height: number;
@@ -15,96 +14,92 @@ interface ImageType {
 
 type MediaUploaderProps = {
   onValueChange: (value: string) => void;
-  setImage: React.Dispatch<React.SetStateAction<ImageType | null>>;
+  setImage: (value: any) => void;
   publicId: string;
-  image: ImageType | null;
+  image: string;
   type: string;
 }
 
 const MediaUploader = ({
   onValueChange,
   setImage,
-  image,
   publicId,
+  image,
   type
 }: MediaUploaderProps) => {
-  const { toast } = useToast()
+  const [mediaUrl, setMediaUrl] = useState<ImageType | null>(null);
 
-  const onUploadSuccessHandler = (result: any) => {
-    setImage((prevState: any) => ({
-      ...prevState,
-      publicId: result?.info?.public_id,
-      width: result?.info?.width,
-      height: result?.info?.height,
-      secureURL: result?.info?.secure_url
-    }))
+  const onUploadSuccess = (results: CloudinaryUploadWidgetResults) => {
+    if (!results.info || typeof results.info === 'string') return;
 
-    onValueChange(result?.info?.public_id)
+    const info = results.info;
 
-    toast({
-      title: 'Image uploaded successfully',
-      description: '1 credit was deducted from your account',
-      duration: 5000,
-      className: 'success-toast' 
-    })
-  }
+    setMediaUrl({
+      publicId: info.public_id,
+      width: info.width,
+      height: info.height,
+      secureURL: info.secure_url
+    });
 
-  const onUploadErrorHandler = () => {
-    toast({
-      title: 'Something went wrong while uploading',
-      description: 'Please try again',
-      duration: 5000,
-      className: 'error-toast' 
-    })
-  }
+    onValueChange(info.public_id);
+    setImage(info.secure_url);
+  };
+
+  const onUploadError = (error: CloudinaryUploadWidgetError) => {
+    const errorMessage = typeof error === 'string' ? error : error?.statusText || 'Something went wrong';
+    console.error('Upload error:', errorMessage);
+  };
 
   return (
-    <CldUploadWidget
-      uploadPreset="natasha_ImajinAI"
-      options={{
-        multiple: false,
-        resourceType: "image",
-      }}
-      onSuccess={onUploadSuccessHandler}
-      onError={onUploadErrorHandler}
-    >
-      {({ open }) => (
-        <div className="flex flex-col gap-4">
-          <h3 className="h3-bold text-dark-600">
-            Original
-          </h3>
-
-          {publicId ? (
-            <>
-              <div className="cursor-pointer overflow-hidden rounded-[10px]">
-                <CldImage 
-                  width={getImageSize(type, image, "width")}
-                  height={getImageSize(type, image, "height")}
-                  src={publicId}
-                  alt="image"
-                  sizes={"(max-width: 767px) 100vw, 50vw"}
-                  placeholder={dataUrl as PlaceholderValue}
-                  className="media-uploader_cldImage"
-                />
-              </div>
-            </>
-          ): (
-            <div className="media-uploader_cta" onClick={() => open()}>
-              <div className="media-uploader_cta-image">
-                <Image 
-                  src="/assets/icons/add.svg"
-                  alt="Add Image"
-                  width={24}
-                  height={24}
-                />
-              </div>
-                <p className="p-14-medium">Click here to upload image</p>
+    <div className="flex flex-col gap-4">
+      <div className="flex-center flex-col gap-4 bg-dark-3 rounded-xl">
+        {publicId || image ? (
+          <>
+            <div className="flex-center flex-col gap-4">
+              <Image
+                src={image || publicId}
+                alt="image"
+                width={250}
+                height={250}
+                className="h-fit w-fit rounded-lg object-cover"
+              />
             </div>
-          )}
-        </div>
-      )}
-    </CldUploadWidget>
-  )
-}
+          </>
+        ) : (
+          <div className="flex-center flex-col gap-4 p-7 text-grey-500">
+            <Image
+              src="/assets/icons/upload.svg"
+              alt="upload"
+              width={77}
+              height={77}
+            />
+            <h3 className="mb-2 mt-2">Drag photo here</h3>
+            <p className="text-light-2 small-regular mb-4">SVG, PNG, JPG</p>
+          </div>
+        )}
+      </div>
 
-export default MediaUploader
+      <CldUploadWidget
+        uploadPreset="jsm_project"
+        options={{
+          multiple: false,
+          resourceType: "image",
+        }}
+        onSuccess={onUploadSuccess}
+        onError={onUploadError}
+      >
+        {({ open }) => (
+          <Button 
+            variant="ghost"
+            className="bg-purple-gradient bg-cover text-white"
+            onClick={() => open()}
+          >
+            Select File
+          </Button>
+        )}
+      </CldUploadWidget>
+    </div>
+  );
+};
+
+export default MediaUploader;
