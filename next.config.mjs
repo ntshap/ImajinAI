@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone', // Penting untuk deployment Azure
   images: {
     remotePatterns: [
       {
@@ -8,7 +9,12 @@ const nextConfig = {
         port: ''
       }
     ]
-  }
+  },
+  // Tambahan konfigurasi untuk production
+  distDir: '.next',
+  poweredByHeader: false,
+  generateEtags: true,
+  reactStrictMode: true,
 };
 
 export default nextConfig;
