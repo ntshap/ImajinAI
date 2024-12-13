@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import {
   Select,
   SelectContent,
@@ -11,16 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-
 import { Button } from "@/components/ui/button"
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { aspectRatioOptions, creditFee, defaultValues, transformationTypes } from "@/constants"
@@ -34,7 +26,23 @@ import { getCldImageUrl } from "next-cloudinary"
 import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
- 
+
+interface TransformationFormProps {
+  action: string;
+  data?: any;
+  userId: string;
+  type: keyof typeof transformationTypes; // Ubah tipe ini
+  creditBalance: number;
+  config?: any;
+}
+
+interface Transformations {
+  restore?: any;
+  removeBackground?: any;
+  recolor?: any;
+  [key: string]: any;
+}
+
 export const formSchema = z.object({
   title: z.string(),
   aspectRatio: z.string().optional(),
@@ -61,13 +69,11 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     publicId: data?.publicId,
   } : defaultValues
 
-   // 1. Define your form.
-   const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
   })
  
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
 

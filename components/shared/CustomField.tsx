@@ -12,9 +12,10 @@ import {
 
 import { formSchema } from "./TransformationForm";
 
+// Perbaiki tipe field pada render props
 type CustomFieldProps = {
   control: Control<z.infer<typeof formSchema>> | undefined;
-  render: (props: { field: any }) => React.ReactNode;
+  render: (props: { field: any }) => React.ReactNode; // Sebaiknya definisikan tipe field lebih spesifik
   name: keyof z.infer<typeof formSchema>;
   formLabel?: string;
   className?: string;

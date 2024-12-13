@@ -6,11 +6,18 @@ import { CldImage, CldUploadWidget } from "next-cloudinary"
 import { PlaceholderValue } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 
+interface ImageType {
+  publicId: string;
+  width: number;
+  height: number;
+  secureURL: string;
+}
+
 type MediaUploaderProps = {
   onValueChange: (value: string) => void;
-  setImage: React.Dispatch<any>;
+  setImage: React.Dispatch<React.SetStateAction<ImageType | null>>;
   publicId: string;
-  image: any;
+  image: ImageType | null;
   type: string;
 }
 
