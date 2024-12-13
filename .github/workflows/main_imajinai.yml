@@ -59,4 +59,4 @@ jobs:
           app-name: 'ImajinAI'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0F62390AAE0E4BC0BE65CE5EB8A5C7BB }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AE27C6BC5B174BA18539EBDC63846A8F }}
