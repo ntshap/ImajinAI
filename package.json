@@ -1,11 +1,11 @@
 {
-  "name": "imajinai",
+  "name": "imaginify",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "DISABLE_ESLINT_PLUGIN=true next build",
+    "start": "next start -p 8080 -H 0.0.0.0",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
