@@ -6,14 +6,12 @@ import { transformationTypes } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
 import { getImageById } from "@/lib/actions/image.actions";
 
-// Define the types
 interface SearchParamProps {
   params: {
     id: string;
   };
 }
 
-// Define TransformationTypeKey type based on your transformationTypes object
 type TransformationTypeKey = keyof typeof transformationTypes;
 
 const Page = async ({ params: { id } }: SearchParamProps) => {
@@ -23,9 +21,20 @@ const Page = async ({ params: { id } }: SearchParamProps) => {
   
   const user = await getUserById(userId);
   const image = await getImageById(id);
-  
+
+  // Add null check for image
+  if (!image) {
+    redirect("/"); // or handle the case when image is not found
+  }
+
+  // Now TypeScript knows image is not null
   const transformation =
     transformationTypes[image.transformationType as TransformationTypeKey];
+
+  // Add null check for transformation
+  if (!transformation) {
+    redirect("/"); // or handle invalid transformation type
+  }
 
   return (
     <>
@@ -36,7 +45,7 @@ const Page = async ({ params: { id } }: SearchParamProps) => {
           userId={user._id}
           type={image.transformationType as TransformationTypeKey}
           creditBalance={user.creditBalance}
-          config={image.config}
+          config={image.config || {}} // Provide default empty object if config is undefined
           data={image}
         />
       </section>
