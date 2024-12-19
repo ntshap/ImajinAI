@@ -83,6 +83,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ImajinAI'
-          slot-name: 'ayh7dtb0fwgah9ez'
+          slot-name: 'production'
           package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AE27C6BC5B174BA18539EBDC63846A8F }}
