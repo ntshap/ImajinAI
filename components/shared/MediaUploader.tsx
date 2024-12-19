@@ -14,7 +14,7 @@ type ImageType = {
 
 type MediaUploaderProps = {
   onValueChange: (value: string) => void;
-  setImage: (value: any) => void;
+  setImage: (value: string) => void;  // Ensure this is a string
   publicId: string;
   image: string;
   type: string;

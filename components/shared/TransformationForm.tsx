@@ -11,9 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import {
-  Form
-} from "@/components/ui/form"
+import { Form } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { aspectRatioOptions, creditFee, defaultValues, transformationTypes } from "@/constants"
 import { CustomField } from "./CustomField"
@@ -27,20 +25,72 @@ import { addImage, updateImage } from "@/lib/actions/image.actions"
 import { useRouter } from "next/navigation"
 import { InsufficientCreditsModal } from "./InsufficientCreditsModal"
 
+interface AddImageParams {
+  title: string;
+  publicId: string;
+  transformationType: string;
+  width: number;
+  height: number;
+  config: object;
+  secureURL: string;
+  transformationURL?: string;
+  aspectRatio?: string;
+  prompt?: string;
+  color?: string;
+}
+
+interface UpdateImageParams extends AddImageParams {
+  _id: string;
+}
+
+interface TransformationConfig {
+  width?: number;
+  height?: number;
+  prompt?: string;
+  color?: string;
+  restore?: boolean;
+  removeBackground?: boolean;
+  fillBackground?: boolean;
+  remove?: {
+    prompt: string;
+    removeShadow: boolean;
+    multiple: boolean;
+  };
+  recolor?: {
+    prompt: string;
+    to: string;
+    multiple: boolean;
+  };
+  [key: string]: any;
+}
+
+interface TransformedImageData {
+  title: string;
+  publicId: string;
+  width: number;
+  height: number;
+  secureURL: string;
+  transformationType: string;
+  aspectRatio?: string;
+  prompt?: string;
+  color?: string;
+  _id?: string;
+}
+
 interface TransformationFormProps {
   action: string;
-  data?: any;
+  data?: TransformedImageData;
   userId: string;
-  type: keyof typeof transformationTypes; // Ubah tipe ini
+  type: keyof typeof transformationTypes;
   creditBalance: number;
-  config?: any;
+  config?: TransformationConfig;
 }
 
 interface Transformations {
-  restore?: any;
-  removeBackground?: any;
-  recolor?: any;
-  [key: string]: any;
+  restore?: TransformationConfig;
+  removeBackground?: TransformationConfig;
+  recolor?: TransformationConfig;
+  [key: string]: TransformationConfig | undefined;
 }
 
 export const formSchema = z.object({
@@ -51,15 +101,22 @@ export const formSchema = z.object({
   publicId: z.string(),
 })
 
-const TransformationForm = ({ action, data = null, userId, type, creditBalance, config = null }: TransformationFormProps) => {
+const TransformationForm = ({ 
+  action, 
+  data, 
+  userId, 
+  type, 
+  creditBalance, 
+  config 
+}: TransformationFormProps) => {
   const transformationType = transformationTypes[type];
-  const [image, setImage] = useState(data)
+  const [image, setImage] = useState<TransformedImageData | null>(data || null);
   const [newTransformation, setNewTransformation] = useState<Transformations | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransforming, setIsTransforming] = useState(false);
-  const [transformationConfig, setTransformationConfig] = useState(config)
-  const [isPending, startTransition] = useTransition()
-  const router = useRouter()
+  const [transformationConfig, setTransformationConfig] = useState<TransformationConfig>({});
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const initialValues = data && action === 'Update' ? {
     title: data?.title,
@@ -67,37 +124,37 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     color: data?.color,
     prompt: data?.prompt,
     publicId: data?.publicId,
-  } : defaultValues
+  } : defaultValues;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialValues,
-  })
+  });
  
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
 
     if(data || image) {
       const transformationUrl = getCldImageUrl({
-        width: image?.width,
-        height: image?.height,
-        src: image?.publicId,
+        width: image?.width || 0,
+        height: image?.height || 0,
+        src: image?.publicId || '',
         ...transformationConfig
-      })
+      });
 
-      const imageData = {
+      const imageData: AddImageParams = {
         title: values.title,
-        publicId: image?.publicId,
+        publicId: image?.publicId || '',
         transformationType: type,
-        width: image?.width,
-        height: image?.height,
+        width: image?.width || 0,
+        height: image?.height || 0,
         config: transformationConfig,
-        secureURL: image?.secureURL,
+        secureURL: image?.secureURL || '',
         transformationURL: transformationUrl,
-        aspectRatio: values.aspectRatio,
-        prompt: values.prompt,
-        color: values.color,
-      }
+        aspectRatio: values.aspectRatio || '',
+        prompt: values.prompt || '',
+        color: values.color || '',
+      };
 
       if(action === 'Add') {
         try {
@@ -105,31 +162,31 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
             image: imageData,
             userId,
             path: '/'
-          })
+          });
 
           if(newImage) {
-            form.reset()
-            setImage(data)
-            router.push(`/transformations/${newImage._id}`)
+            form.reset();
+            setImage(null);
+            router.push(`/transformations/${newImage._id}`);
           }
         } catch (error) {
           console.log(error);
         }
       }
 
-      if(action === 'Update') {
+      if(action === 'Update' && data?._id) {
         try {
           const updatedImage = await updateImage({
             image: {
               ...imageData,
-              _id: data._id
+              _id: data._id,
             },
             userId,
             path: `/transformations/${data._id}`
-          })
+          });
 
           if(updatedImage) {
-            router.push(`/transformations/${updatedImage._id}`)
+            router.push(`/transformations/${updatedImage._id}`);
           }
         } catch (error) {
           console.log(error);
@@ -137,57 +194,60 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
       }
     }
 
-    setIsSubmitting(false)
+    setIsSubmitting(false);
   }
 
   const onSelectFieldHandler = (value: string, onChangeField: (value: string) => void) => {
-    const imageSize = aspectRatioOptions[value as AspectRatioKey]
+    const imageSize = aspectRatioOptions[value as AspectRatioKey];
 
-    setImage((prevState: any) => ({
+    setImage((prevState) => prevState ? ({
       ...prevState,
       aspectRatio: imageSize.aspectRatio,
       width: imageSize.width,
       height: imageSize.height,
-    }))
+    }) : null);
 
-    setNewTransformation(transformationType.config);
-
-    return onChangeField(value)
+    setNewTransformation(transformationType.config as Transformations);
+    return onChangeField(value);
   }
 
-  const onInputChangeHandler = (fieldName: string, value: string, type: string, onChangeField: (value: string) => void) => {
+  const onInputChangeHandler = (
+    fieldName: string, 
+    value: string, 
+    type: string, 
+    onChangeField: (value: string) => void
+  ) => {
     debounce(() => {
-      setNewTransformation((prevState: any) => ({
+      setNewTransformation((prevState) => ({
         ...prevState,
         [type]: {
-          ...prevState?.[type],
-          [fieldName === 'prompt' ? 'prompt' : 'to' ]: value 
+          ...(prevState?.[type] || {}),
+          [fieldName === 'prompt' ? 'prompt' : 'to']: value 
         }
-      }))
+      }));
     }, 1000)();
       
-    return onChangeField(value)
+    return onChangeField(value);
   }
 
   const onTransformHandler = async () => {
-    setIsTransforming(true)
-
+    setIsTransforming(true);
     setTransformationConfig(
-      deepMergeObjects(newTransformation, transformationConfig)
-    )
+      deepMergeObjects(newTransformation as TransformationConfig || {}, transformationConfig)
+    );
 
-    setNewTransformation(null)
+    setNewTransformation(null);
 
     startTransition(async () => {
-      await updateCredits(userId, creditFee)
-    })
+      await updateCredits(userId, creditFee);
+    });
   }
 
   useEffect(() => {
     if(image && (type === 'restore' || type === 'removeBackground')) {
-      setNewTransformation(transformationType.config)
+      setNewTransformation(transformationType.config as Transformations);
     }
-  }, [image, transformationType.config, type])
+  }, [image, transformationType.config, type]);
 
   return (
     <Form {...form}>
@@ -238,7 +298,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
               className="w-full"
               render={({ field }) => (
                 <Input 
-                  value={field.value}
+                  value={field.value || ''}
                   className="input-field"
                   onChange={(e) => onInputChangeHandler(
                     'prompt',
@@ -258,7 +318,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
                 className="w-full"
                 render={({ field }) => (
                   <Input 
-                    value={field.value}
+                    value={field.value || ''}
                     className="input-field"
                     onChange={(e) => onInputChangeHandler(
                       'color',
@@ -280,10 +340,17 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
             className="flex size-full flex-col"
             render={({ field }) => (
               <MediaUploader 
-                onValueChange={field.onChange}
-                setImage={setImage}
-                publicId={field.value}
-                image={image}
+                onValueChange={(value: string) => field.onChange(value)}
+                setImage={(secureURL: string) => setImage({ 
+                  secureURL, 
+                  publicId: '', // Provide default or actual values for other fields
+                  width: 0, 
+                  height: 0, 
+                  title: '', 
+                  transformationType: '' // Removed config as it may not exist in TransformedImageData
+                })}
+                publicId={field.value || ''}
+                image={image?.publicId || ''}
                 type={type}
               />
             )}

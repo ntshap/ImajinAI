@@ -4,6 +4,13 @@ import { getAllImages } from "@/lib/actions/image.actions"
 import Image from "next/image"
 import Link from "next/link"
 
+interface SearchParamProps {
+  searchParams: {
+    page?: string;
+    query?: string;
+  }
+}
+
 const Home = async ({ searchParams }: SearchParamProps) => {
   const page = Number(searchParams?.page) || 1;
   const searchQuery = (searchParams?.query as string) || '';
@@ -35,7 +42,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
       <section className="sm:mt-12">
         <Collection 
           hasSearch={true}
-          images={images?.data}
+          images={images?.data || []}
           totalPages={images?.totalPage}
           page={page}
         />

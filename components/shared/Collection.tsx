@@ -16,7 +16,7 @@ import { formUrlQuery } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Search } from "./Search";
 
-// Update the IImage interface to include required properties
+// Updated interface to better match your types/index.d.ts
 interface ExtendedIImage extends IImage {
   _id: string;
   publicId: string;
@@ -24,30 +24,50 @@ interface ExtendedIImage extends IImage {
   width: number;
   height: number;
   transformationType: keyof typeof transformationTypes;
-  config: Record<string, any>;
+  config: {
+    width?: number;
+    height?: number;
+    [key: string]: number | undefined;
+  };
+  secureURL: string;
+  transformationURL: string;
+  aspectRatio?: string;
+  prompt?: string;
+  color?: string;
+  author: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    clerkId: string;
+  };
 }
 
-export const Collection = ({
+interface CollectionProps {
+  hasSearch?: boolean;
+  images: ExtendedIImage[];
+  totalPages?: number;
+  page: number | string;
+}
+
+export const Collection: React.FC<CollectionProps> = ({
   hasSearch = false,
   images,
   totalPages = 1,
   page,
-}: {
-  images: ExtendedIImage[];
-  totalPages?: number;
-  page: number;
-  hasSearch?: boolean;
-}) => {
+}: CollectionProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const onPageChange = (action: string) => {
-    const pageValue = action === "next" ? Number(page) + 1 : Number(page) - 1;
+  const onPageChange = (action: "next" | "prev") => {
+    const currentPage = Number(page);
+    const pageValue = action === "next" ? currentPage + 1 : currentPage - 1;
+    
     const newUrl = formUrlQuery({
       searchParams: searchParams.toString(),
       key: "page",
-      value: pageValue,
+      value: pageValue.toString(),
     });
+    
     router.push(newUrl, { scroll: false });
   };
 
@@ -97,7 +117,11 @@ export const Collection = ({
   );
 };
 
-const Card = ({ image }: { image: ExtendedIImage }) => {
+interface CardProps {
+  image: ExtendedIImage;
+}
+
+const Card: React.FC<CardProps> = ({ image }) => {
   return (
     <li>
       <Link href={`/transformations/${image._id}`} className="collection-card">

@@ -1,5 +1,5 @@
 import React from "react";
-import { Control } from "react-hook-form";
+import { Control, ControllerRenderProps, FieldValues } from "react-hook-form";
 import { z } from "zod";
 
 import {
@@ -12,11 +12,12 @@ import {
 
 import { formSchema } from "./TransformationForm";
 
-// Perbaiki tipe field pada render props
+type FormData = z.infer<typeof formSchema>;
+
 type CustomFieldProps = {
-  control: Control<z.infer<typeof formSchema>> | undefined;
-  render: (props: { field: any }) => React.ReactNode; // Sebaiknya definisikan tipe field lebih spesifik
-  name: keyof z.infer<typeof formSchema>;
+  control: Control<FormData> | undefined;
+  render: (props: { field: ControllerRenderProps<FormData, keyof FormData> }) => React.ReactNode;
+  name: keyof FormData;
   formLabel?: string;
   className?: string;
 };

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "DISABLE_ESLINT_PLUGIN=true next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.7.1",
@@ -21,20 +22,23 @@
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.468.0",
     "mongodb": "^6.11.0",
     "mongoose": "^8.8.4",
     "next": "15.0.4",
     "next-cloudinary": "^6.16.0",
+    "papaparse": "^5.4.1",
     "qs": "^6.13.1",
     "react": "^19",
     "react-dom": "^19",
-    "react-hook-form": "^7.53.2",
+    "react-hook-form": "^7.54.1",
     "stripe": "^17.4.0",
     "svix": "^1.42.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.23.8"
+    "xlsx": "^0.18.5",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22",

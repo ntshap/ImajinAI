@@ -3,7 +3,6 @@
 import { type ClassValue, clsx } from "clsx";
 import qs from "qs";
 import { twMerge } from "tailwind-merge";
-
 import { aspectRatioOptions } from "@/constants";
 
 // Custom error class for application-specific errors
@@ -24,25 +23,21 @@ export function cn(...inputs: ClassValue[]) {
 
 // ENHANCED ERROR HANDLER
 export const handleError = (error: unknown) => {
-  // Already handled errors
   if (error instanceof AppError) {
     console.error(`[${error.code}] ${error.message}`);
     throw error;
   }
 
-  // Native JavaScript errors
   if (error instanceof Error) {
     console.error(`[ERROR] ${error.name}: ${error.message}`);
     throw new AppError(error.message, 500, error.name.toUpperCase());
   }
 
-  // String errors
   if (typeof error === "string") {
     console.error(`[ERROR] ${error}`);
     throw new AppError(error, 500, 'UNKNOWN_ERROR');
   }
 
-  // Unknown errors
   console.error('[ERROR] Unknown error:', error);
   throw new AppError(
     `Unknown error: ${JSON.stringify(error)}`,
@@ -51,9 +46,15 @@ export const handleError = (error: unknown) => {
   );
 };
 
-// PLACEHOLDER LOADER - while image is transforming
-const shimmer = (w: number, h: number) => `
-<svg width="${w}" height="${h}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+// SVG Types for shimmer
+interface SVGDimensions {
+  width: number;
+  height: number;
+}
+
+// PLACEHOLDER LOADER
+const shimmer = ({ width, height }: SVGDimensions): string => `
+<svg width="${width}" height="${height}" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <defs>
     <linearGradient id="g">
       <stop stop-color="#7986AC" offset="20%" />
@@ -61,32 +62,38 @@ const shimmer = (w: number, h: number) => `
       <stop stop-color="#7986AC" offset="70%" />
     </linearGradient>
   </defs>
-  <rect width="${w}" height="${h}" fill="#7986AC" />
-  <rect id="r" width="${w}" height="${h}" fill="url(#g)" />
-  <animate xlink:href="#r" attributeName="x" from="-${w}" to="${w}" dur="1s" repeatCount="indefinite"  />
+  <rect width="${width}" height="${height}" fill="#7986AC" />
+  <rect id="r" width="${width}" height="${height}" fill="url(#g)" />
+  <animate xlink:href="#r" attributeName="x" from="-${width}" to="${width}" dur="1s" repeatCount="indefinite"  />
 </svg>`;
 
-const toBase64 = (str: string) =>
+const toBase64 = (str: string): string =>
   typeof window === "undefined"
     ? Buffer.from(str).toString("base64")
     : window.btoa(str);
 
 export const dataUrl = `data:image/svg+xml;base64,${toBase64(
-  shimmer(1000, 1000)
+  shimmer({ width: 1000, height: 1000 })
 )}`;
 
-// FORM URL QUERY
+// URL Query Types
 interface FormUrlQueryParams {
-  searchParams: URLSearchParams;
+  searchParams: string | URLSearchParams;
   key: string;
-  value: string;
+  value: string | number;
 }
 
+interface RemoveUrlQueryParams {
+  searchParams: string | URLSearchParams;
+  keysToRemove: string[];
+}
+
+// FORM URL QUERY
 export const formUrlQuery = ({
   searchParams,
   key,
   value,
-}: FormUrlQueryParams) => {
+}: FormUrlQueryParams): string => {
   try {
     const params = { ...qs.parse(searchParams.toString()), [key]: value };
     return `${window.location.pathname}?${qs.stringify(params, {
@@ -99,15 +106,10 @@ export const formUrlQuery = ({
 };
 
 // REMOVE KEY FROM QUERY
-interface RemoveUrlQueryParams {
-  searchParams: URLSearchParams;
-  keysToRemove: string[];
-}
-
 export function removeKeysFromQuery({
   searchParams,
   keysToRemove,
-}: RemoveUrlQueryParams) {
+}: RemoveUrlQueryParams): string {
   try {
     const currentUrl = qs.parse(searchParams.toString());
 
@@ -115,7 +117,6 @@ export function removeKeysFromQuery({
       delete currentUrl[key];
     });
 
-    // Remove null or undefined values
     Object.keys(currentUrl).forEach(
       (key) => currentUrl[key] == null && delete currentUrl[key]
     );
@@ -127,21 +128,35 @@ export function removeKeysFromQuery({
   }
 }
 
+// Debounce Types
+type DebouncedFunction<T extends (...args: any[]) => void> = (...args: Parameters<T>) => void;
+
 // DEBOUNCE
-export const debounce = (func: (...args: any[]) => void, delay: number) => {
+export const debounce = <T extends (...args: any[]) => void>(
+  func: T,
+  delay: number
+): DebouncedFunction<T> => {
   let timeoutId: NodeJS.Timeout | null;
-  return (...args: any[]) => {
+  
+  return (...args: Parameters<T>) => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(null, args), delay);
   };
 };
+
+// Image Types
+interface ImageDimensions {
+  width?: number;
+  height?: number;
+  aspectRatio?: AspectRatioKey;
+}
 
 // GET IMAGE SIZE
 export type AspectRatioKey = keyof typeof aspectRatioOptions;
 
 export const getImageSize = (
   type: string,
-  image: any,
+  image: ImageDimensions,
   dimension: "width" | "height"
 ): number => {
   try {
@@ -159,7 +174,7 @@ export const getImageSize = (
 };
 
 // DOWNLOAD IMAGE
-export const download = async (url: string, filename: string) => {
+export const download = async (url: string, filename: string): Promise<void> => {
   if (!url) {
     throw new AppError('Resource URL not provided', 400, 'MISSING_URL');
   }
@@ -188,14 +203,22 @@ export const download = async (url: string, filename: string) => {
   }
 };
 
+// Object Types for deepMergeObjects
+interface GenericObject {
+  [key: string]: any;
+}
+
 // DEEP MERGE OBJECTS
-export const deepMergeObjects = (obj1: any, obj2: any) => {
+export const deepMergeObjects = <T extends GenericObject>(
+  obj1: T, 
+  obj2: T | null | undefined
+): T => {
   try {
     if (obj2 === null || obj2 === undefined) {
       return obj1;
     }
 
-    let output = { ...obj2 };
+    let output = { ...obj2 } as T;
 
     for (let key in obj1) {
       if (obj1.hasOwnProperty(key)) {

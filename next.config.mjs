@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone', // Penting untuk deployment Azure
+  output: 'standalone', // Important for Azure deployment
   images: {
     remotePatterns: [
       {
@@ -10,7 +10,7 @@ const nextConfig = {
       }
     ]
   },
-  // Tambahan konfigurasi untuk production
+  // Additional production configuration
   distDir: '.next',
   poweredByHeader: false,
   generateEtags: true,

@@ -6,8 +6,18 @@ import { transformationTypes } from "@/constants";
 import { getUserById } from "@/lib/actions/user.actions";
 import { getImageById } from "@/lib/actions/image.actions";
 
+// Define the types
+interface SearchParamProps {
+  params: {
+    id: string;
+  };
+}
+
+// Define TransformationTypeKey type based on your transformationTypes object
+type TransformationTypeKey = keyof typeof transformationTypes;
+
 const Page = async ({ params: { id } }: SearchParamProps) => {
-  const { userId } = await auth();  // Added await here
+  const { userId } = await auth();
   
   if (!userId) redirect("/sign-in");
   

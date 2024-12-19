@@ -6,29 +6,50 @@ import { PlaceholderValue } from 'next/dist/shared/lib/get-img-props'
 import Image from 'next/image'
 import React from 'react'
 
+interface TransformationConfig {
+  width?: number;
+  height?: number;
+  prompt?: string;
+  color?: string;
+  [key: string]: any;
+}
+
+interface ImageData {
+  publicId: string;
+  width: number;
+  height: number;
+  title: string;
+  secureURL?: string;
+}
+
 interface TransformedImageProps {
-  image: {
-    publicId: string;
-    width: number;
-    height: number;
-    title: string;
-  };
+  image: ImageData | null;
   type: string;
   title: string;
-  transformationConfig: any;
+  transformationConfig: TransformationConfig | null;
   isTransforming: boolean;
   setIsTransforming?: (value: boolean) => void;
   hasDownload?: boolean;
 }
 
-const TransformedImage = ({ image, type, title, transformationConfig, isTransforming, setIsTransforming, hasDownload = false }: TransformedImageProps) => {
+const TransformedImage = ({ 
+  image, 
+  type, 
+  title, 
+  transformationConfig, 
+  isTransforming, 
+  setIsTransforming, 
+  hasDownload = false 
+}: TransformedImageProps) => {
   const downloadHandler = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
 
+    if (!image) return;
+
     download(getCldImageUrl({
-      width: image?.width,
-      height: image?.height,
-      src: image?.publicId,
+      width: image.width,
+      height: image.height,
+      src: image.publicId,
       ...transformationConfig
     }), title)
   }
@@ -61,7 +82,7 @@ const TransformedImage = ({ image, type, title, transformationConfig, isTransfor
           <CldImage 
             width={getImageSize(type, image, "width")}
             height={getImageSize(type, image, "height")}
-            src={image?.publicId}
+            src={image.publicId}
             alt={image.title}
             sizes={"(max-width: 767px) 100vw, 50vw"}
             placeholder={dataUrl as PlaceholderValue}
