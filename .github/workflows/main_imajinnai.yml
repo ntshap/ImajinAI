@@ -68,12 +68,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: '{
-            "clientId": "cf6b9351-faba-4221-ac2d-290867321565",
-            "clientSecret": "sfL8Q~CZJKLnZt0CI0hv9T6-5NElsJoQ.gAPcb53",
-            "subscriptionId": "0f894b52-9b9a-45dc-bbcd-68724ace720a",
-            "tenantId": "dd0188eb-d44b-486f-ba78-7e3af4140437"
-          }'
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Create .env file
         run: |
@@ -109,6 +104,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'ImajinnAI'
+          resource-group: 'hahaha'
           slot-name: 'production'
           package: deployment
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
