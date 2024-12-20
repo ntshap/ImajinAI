@@ -96,7 +96,7 @@ jobs:
           cp -r public deployment/
           cp package.json deployment/
           cp package-lock.json deployment/
-          cp next.config.js deployment/
+          cp next.config.jms deployment/
           # Copy .env file
           cp .env deployment/
 
