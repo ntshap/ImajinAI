@@ -85,10 +85,20 @@ jobs:
           echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env
           echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}" >> .env
 
-      - name: npm install and build
+      - name: npm install, build, and prepare for deployment
         run: |
           npm install
           npm run build
+          # Create deployment package directory
+          mkdir deployment
+          # Copy necessary files for running the app
+          cp -r .next deployment/
+          cp -r public deployment/
+          cp package.json deployment/
+          cp package-lock.json deployment/
+          cp next.config.js deployment/
+          # Copy .env file
+          cp .env deployment/
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -96,5 +106,5 @@ jobs:
         with:
           app-name: 'ImajinAI'
           slot-name: 'production'
-          package: .
+          package: deployment
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
