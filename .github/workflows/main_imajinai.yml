@@ -89,10 +89,6 @@ jobs:
         run: |
           npm install
           npm run build
-
-      - name: Zip the application files
-        run: |
-          zip -r release.zip . -x "node_modules/*" ".git/*" ".github/*" "tests/*"
       
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -100,5 +96,4 @@ jobs:
         with:
           app-name: 'ImajinAI'
           slot-name: 'production'
-          package: release.zip
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
